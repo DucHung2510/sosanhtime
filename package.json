@@ -2,7 +2,6 @@
   "name": "yt-tiktok-compare",
   "version": "1.0.0",
   "description": "Compare YouTube and TikTok upload times and thumbnails",
-  "main": "server.js",
   "scripts": {
     "start": "node server.local.js"
   },
