@@ -4,7 +4,7 @@
   "description": "Compare YouTube and TikTok upload times and thumbnails",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.local.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",

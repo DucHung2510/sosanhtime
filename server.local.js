@@ -48,7 +48,6 @@ app.get('/api/tiktok', async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).json({ error: 'missing url' });
   try {
-    // Try oEmbed first for title, author and thumbnail
     let title = '';
     let channel = '';
     let thumbnail = '';
@@ -60,11 +59,8 @@ app.get('/api/tiktok', async (req, res) => {
         channel = o.author_name ? (o.author_name.startsWith('@') ? o.author_name : '@' + o.author_name) : '';
         thumbnail = o.thumbnail_url || '';
       }
-    } catch (e) {
-      // ignore oembed failure
-    }
+    } catch (e) {}
 
-    // Fetch page to extract createTime from SIGI_STATE
     const html = await fetchText(url);
     let uploadIso = null;
     const sigiMatch = html.match(/<script id="SIGI_STATE">(.*?)<\/script>/s);
@@ -77,20 +73,16 @@ app.get('/api/tiktok', async (req, res) => {
           const item = itemModule[itemKeys[0]];
           if (!title && item.desc) title = item.desc;
           if (!thumbnail && item.video && item.video.cover) thumbnail = item.video.cover;
-          // createTime is seconds
           if (item.createTime) {
             const d = new Date(item.createTime * 1000);
             if (!isNaN(d)) uploadIso = d.toISOString();
           }
           if (!channel) {
-            // try to find author
             const author = item.author || item.authorName || null;
             if (author) channel = author.startsWith('@') ? author : '@' + author;
           }
         }
-      } catch (e) {
-        // ignore parse errors
-      }
+      } catch (e) {}
     }
 
     res.json({ title, channel, thumbnail, uploadDate: uploadIso });
