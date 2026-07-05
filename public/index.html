@@ -1,0 +1,531 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0B0D12;
+    --panel:#12151C;
+    --panel-2:#171B24;
+    --line:#232733;
+    --text:#E8EAED;
+    --text-dim:#848A98;
+    --yt:#FF3B3B;
+    --yt-dim:#5c2323;
+    --tt-cyan:#25F4EE;
+    --tt-pink:#FE2C55;
+    --ok:#3ddc84;
+  }
+  *{box-sizing:border-box;}
+  .app{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    padding:28px 20px 36px;
+    min-height:100%;
+    border-radius:14px;
+  }
+  .app-header{
+    text-align:center;
+    margin-bottom:26px;
+  }
+  .app-header .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--text-dim);
+    text-transform:uppercase;
+  }
+  .app-header h1{
+    margin:6px 0 0;
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  @media (max-width:680px){
+    .grid{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .panel-top{
+    height:4px;
+    width:100%;
+  }
+  .panel.yt .panel-top{background:var(--yt);}
+  .panel.tt .panel-top{background:linear-gradient(90deg,var(--tt-cyan),var(--tt-pink));}
+  .panel-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:14px 16px 10px;
+  }
+  .badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.06em;
+    padding:3px 8px;
+    border-radius:5px;
+  }
+  .panel.yt .badge{background:rgba(255,59,59,.14);color:var(--yt);}
+  .panel.tt .badge{background:linear-gradient(90deg,rgba(37,244,238,.14),rgba(254,44,85,.14));color:var(--tt-cyan);}
+  .panel-head span.label{font-size:13px;color:var(--text-dim);}
+
+  .input-row{
+    display:flex;
+    gap:8px;
+    padding:0 16px 14px;
+  }
+  .input-row input{
+    flex:1;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:8px;
+    padding:9px 10px;
+    font-size:13px;
+    font-family:'JetBrains Mono',monospace;
+    outline:none;
+  }
+  .input-row input:focus{border-color:var(--text-dim);}
+  .input-row button{
+    background:var(--text);
+    color:#0B0D12;
+    border:none;
+    border-radius:8px;
+    padding:0 14px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .input-row button:disabled{opacity:.5;cursor:default;}
+
+  .thumb-wrap{
+    margin:0 16px 12px;
+    border-radius:8px;
+    overflow:hidden;
+    aspect-ratio:16/9;
+    background:var(--panel-2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--line);
+  }
+  .panel.tt .thumb-wrap{aspect-ratio:9/13;max-height:260px;}
+  .thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb-wrap .placeholder{
+    color:var(--text-dim);
+    font-size:12px;
+    font-family:'JetBrains Mono',monospace;
+    text-align:center;
+    padding:10px;
+  }
+
+  .info{
+    padding:0 16px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .field .k{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .field .v{
+    font-size:13.5px;
+    line-height:1.4;
+    min-height:18px;
+    word-break:break-word;
+  }
+  .field input.v-input{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:7px;
+    padding:7px 9px;
+    font-size:13.5px;
+    font-family:'Space Grotesk',sans-serif;
+    outline:none;
+    width:100%;
+  }
+  .field input.v-input:focus{border-color:var(--text-dim);}
+  .field input[type=date],.field input[type=time]{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:7px;
+    padding:7px 9px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    outline:none;
+    width:100%;
+  }
+  .field input[type=date]:focus,.field input[type=time]:focus{border-color:var(--text-dim);}
+  .hint{
+    font-size:10.5px;
+    color:var(--text-dim);
+    font-style:italic;
+  }
+  .error-msg{
+    font-size:11.5px;
+    color:var(--yt);
+    padding:0 16px 8px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* Timeline / diff readout */
+  .compare{
+    max-width:960px;
+    margin:22px auto 0;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px 22px 22px;
+  }
+  .compare .title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin-bottom:14px;
+    text-align:center;
+  }
+  .track{
+    position:relative;
+    height:40px;
+    margin:0 10px 10px;
+  }
+  .track-line{
+    position:absolute;
+    top:50%;
+    left:0;right:0;
+    height:2px;
+    background:var(--line);
+    transform:translateY(-50%);
+  }
+  .marker{
+    position:absolute;
+    top:50%;
+    width:16px;height:16px;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    border:2px solid var(--bg);
+  }
+  .marker.yt{background:var(--yt);}
+  .marker.tt{background:linear-gradient(135deg,var(--tt-cyan),var(--tt-pink));}
+  .marker-label{
+    position:absolute;
+    top:-22px;
+    transform:translateX(-50%);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+  .result{
+    text-align:center;
+    font-size:17px;
+    font-weight:600;
+    margin-top:6px;
+  }
+  .result .amount{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--ok);
+  }
+  .result-sub{
+    text-align:center;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+  .placeholder-result{
+    text-align:center;
+    font-size:13px;
+    color:var(--text-dim);
+    padding:6px 0 2px;
+  }
+</style>
+
+<div class="app">
+  <div class="app-header">
+    <div class="eyebrow">Đối chiếu mốc thời gian đăng tải</div>
+    <h1>YouTube ⇄ TikTok Timeline</h1>
+  </div>
+
+  <div class="grid">
+    <!-- YOUTUBE PANEL -->
+    <div class="panel yt" id="yt-panel">
+      <div class="panel-top"></div>
+      <div class="panel-head">
+        <span class="badge">YOUTUBE</span>
+        <span class="label">Dán link video</span>
+      </div>
+      <div class="input-row">
+        <input id="yt-url" type="text" placeholder="https://youtube.com/watch?v=...">
+        <button id="yt-fetch">Lấy info</button>
+      </div>
+      <div class="thumb-wrap" id="yt-thumb"><div class="placeholder">Chưa có thumbnail</div></div>
+      <div class="error-msg" id="yt-error"></div>
+      <div class="info">
+        <div class="field"><div class="k">Tên kênh</div><input class="v-input" type="text" id="yt-channel" placeholder="—"></div>
+        <div class="field"><div class="k">Tiêu đề</div><input class="v-input" type="text" id="yt-title" placeholder="—"></div>
+        <div class="field">
+          <div class="k">Thời gian đăng (ngày/tháng/năm)</div>
+          <input type="date" id="yt-date">
+        </div>
+        <div class="field">
+          <div class="k">Giờ đăng (giờ/phút/giây)</div>
+          <input type="time" id="yt-time" step="1">
+        </div>
+        <div class="hint">* Ngày thường tra được tự động. Giờ:phút:giây chính xác hiếm khi công khai — nếu để trống, hãy xem trong video/kênh và nhập tay.</div>
+      </div>
+    </div>
+
+    <!-- TIKTOK PANEL -->
+    <div class="panel tt" id="tt-panel">
+      <div class="panel-top"></div>
+      <div class="panel-head">
+        <span class="badge">TIKTOK</span>
+        <span class="label">Dán link video</span>
+      </div>
+      <div class="input-row">
+        <input id="tt-url" type="text" placeholder="https://www.tiktok.com/@user/video/...">
+        <button id="tt-fetch">Lấy info</button>
+      </div>
+      <div class="thumb-wrap" id="tt-thumb"><div class="placeholder">Chưa có thumbnail</div></div>
+      <div class="error-msg" id="tt-error"></div>
+      <div class="info">
+        <div class="field"><div class="k">Tên kênh</div><input class="v-input" type="text" id="tt-channel" placeholder="—"></div>
+        <div class="field"><div class="k">Tiêu đề</div><input class="v-input" type="text" id="tt-title" placeholder="—"></div>
+        <div class="field">
+          <div class="k">Thời gian đăng (ngày/tháng/năm)</div>
+          <input type="date" id="tt-date">
+        </div>
+        <div class="field">
+          <div class="k">Giờ đăng (giờ/phút/giây)</div>
+          <input type="time" id="tt-time" step="1">
+        </div>
+        <div class="hint">* Ngày đôi khi tra được tự động nếu công khai. Giờ:phút:giây gần như không public trên TikTok — nhập tay khi xem trong app.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="compare">
+    <div class="title">Chênh lệch thời gian đăng</div>
+    <div class="track">
+      <div class="track-line"></div>
+      <div class="marker yt" id="marker-yt" style="left:30%;display:none;"><div class="marker-label" id="marker-yt-label"></div></div>
+      <div class="marker tt" id="marker-tt" style="left:70%;display:none;"><div class="marker-label" id="marker-tt-label"></div></div>
+    </div>
+    <div id="result-area">
+      <div class="placeholder-result">Nhập đầy đủ ngày + giờ đăng ở cả 2 bên để xem chênh lệch</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function getYoutubeId(url){
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+
+// Artifacts can only reach api.anthropic.com directly, so metadata lookup goes
+// through a Claude completion (with web_search) rather than calling
+// youtube.com / tiktok.com from the browser, which is blocked.
+async function lookupViaClaude(url, platform){
+  const prompt = platform === 'youtube'
+    ? 'Tra cứu video YouTube tại URL sau bằng web search: ' + url + '. ' +
+      'Tìm: tên kênh chính xác, tiêu đề chính xác, ngày đăng (định dạng DD/MM/YYYY), và giờ đăng chính xác nếu tìm thấy công khai ở đâu đó (định dạng HH:MM:SS, giờ Việt Nam nếu có múi giờ, nếu không thì ghi giờ theo nguồn tìm được). ' +
+      'Nếu không chắc chắn hoặc không tìm thấy trường nào, để giá trị null cho trường đó, KHÔNG được bịa. ' +
+      'CHỈ trả lời bằng JSON hợp lệ, không thêm chữ nào khác, không dùng markdown code fence, theo đúng format: ' +
+      '{"channel": string|null, "title": string|null, "date": "DD/MM/YYYY"|null, "time": "HH:MM:SS"|null, "found_time": boolean}'
+    : 'Tra cứu video TikTok tại URL sau bằng web search: ' + url + '. ' +
+      'Tìm: username kênh (dạng @username), tiêu đề/caption chính xác, ngày đăng (định dạng DD/MM/YYYY), và giờ đăng chính xác nếu tìm thấy công khai ở đâu đó (định dạng HH:MM:SS). ' +
+      'TikTok hiếm khi công khai giờ chính xác — nếu không tìm thấy, để null, KHÔNG được bịa. ' +
+      'CHỈ trả lời bằng JSON hợp lệ, không thêm chữ nào khác, không dùng markdown code fence, theo đúng format: ' +
+      '{"channel": string|null, "title": string|null, "date": "DD/MM/YYYY"|null, "time": "HH:MM:SS"|null, "found_time": boolean}';
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }],
+      tools: [{ type: "web_search_20250305", name: "web_search" }]
+    })
+  });
+
+  if(!response.ok) throw new Error('API lỗi ' + response.status);
+  const data = await response.json();
+  const text = (data.content || [])
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('\n');
+  const clean = text.replace(/```json|```/g, '').trim();
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if(!jsonMatch) throw new Error('Không tìm thấy JSON hợp lệ trong phản hồi');
+  return JSON.parse(jsonMatch[0]);
+}
+
+function toIsoDate(ddmmyyyy){
+  if(!ddmmyyyy) return '';
+  const m = ddmmyyyy.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(!m) return '';
+  return m[3] + '-' + pad(parseInt(m[2])) + '-' + pad(parseInt(m[1]));
+}
+
+async function fetchYoutube(){
+  const url = document.getElementById('yt-url').value.trim();
+  const errEl = document.getElementById('yt-error');
+  errEl.textContent = '';
+  if(!url){ errEl.textContent = 'Vui lòng nhập link YouTube.'; return; }
+  const vid = getYoutubeId(url);
+  const btn = document.getElementById('yt-fetch');
+  btn.disabled = true; btn.textContent = 'Đang tra cứu...';
+  try{
+    if(vid){
+      document.getElementById('yt-thumb').innerHTML =
+        '<img src="https://img.youtube.com/vi/' + vid + '/hqdefault.jpg" alt="thumbnail">';
+    }
+    const info = await lookupViaClaude(url, 'youtube');
+    if(info.channel) document.getElementById('yt-channel').value = info.channel;
+    if(info.title) document.getElementById('yt-title').value = info.title;
+    if(info.date){
+      const iso = toIsoDate(info.date);
+      if(iso) document.getElementById('yt-date').value = iso;
+    }
+    if(info.time && info.found_time){
+      document.getElementById('yt-time').value = info.time.length===5 ? info.time+':00' : info.time;
+    }
+    if(!info.date && !info.time){
+      errEl.textContent = 'Đã lấy được tên kênh/tiêu đề, nhưng không tìm thấy ngày/giờ đăng công khai — vui lòng nhập tay.';
+    }
+    computeDiff();
+  }catch(e){
+    errEl.textContent = 'Không lấy được thông tin tự động (' + e.message + '). Vui lòng nhập tay tên kênh/tiêu đề/ngày giờ.';
+  }finally{
+    btn.disabled = false; btn.textContent = 'Lấy info';
+  }
+}
+
+async function fetchTiktok(){
+  const url = document.getElementById('tt-url').value.trim();
+  const errEl = document.getElementById('tt-error');
+  errEl.textContent = '';
+  if(!url){ errEl.textContent = 'Vui lòng nhập link TikTok.'; return; }
+  const btn = document.getElementById('tt-fetch');
+  btn.disabled = true; btn.textContent = 'Đang tra cứu...';
+  try{
+    const info = await lookupViaClaude(url, 'tiktok');
+    if(info.channel) document.getElementById('tt-channel').value = info.channel.startsWith('@') ? info.channel : '@'+info.channel;
+    if(info.title) document.getElementById('tt-title').value = info.title;
+    if(info.date){
+      const iso = toIsoDate(info.date);
+      if(iso) document.getElementById('tt-date').value = iso;
+    }
+    if(info.time && info.found_time){
+      document.getElementById('tt-time').value = info.time.length===5 ? info.time+':00' : info.time;
+    }
+    if(!info.date && !info.time){
+      errEl.textContent = 'Đã lấy được tên kênh/tiêu đề (nếu có), nhưng không tìm thấy ngày/giờ đăng công khai — vui lòng nhập tay.';
+    }
+    computeDiff();
+  }catch(e){
+    errEl.textContent = 'Không lấy được thông tin tự động (' + e.message + '). Vui lòng nhập tay tên kênh/tiêu đề/ngày giờ.';
+  }finally{
+    btn.disabled = false; btn.textContent = 'Lấy info';
+  }
+}
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function computeDiff(){
+  const ytDate = document.getElementById('yt-date').value;
+  const ytTime = document.getElementById('yt-time').value;
+  const ttDate = document.getElementById('tt-date').value;
+  const ttTime = document.getElementById('tt-time').value;
+  const resultArea = document.getElementById('result-area');
+  const mYt = document.getElementById('marker-yt');
+  const mTt = document.getElementById('marker-tt');
+
+  if(!ytDate || !ytTime || !ttDate || !ttTime){
+    resultArea.innerHTML = '<div class="placeholder-result">Nhập đầy đủ ngày + giờ đăng ở cả 2 bên để xem chênh lệch</div>';
+    mYt.style.display = 'none';
+    mTt.style.display = 'none';
+    return;
+  }
+
+  const dYt = new Date(ytDate + 'T' + (ytTime.length===5? ytTime+':00': ytTime));
+  const dTt = new Date(ttDate + 'T' + (ttTime.length===5? ttTime+':00': ttTime));
+  const diffMs = dTt.getTime() - dYt.getTime();
+  const absMs = Math.abs(diffMs);
+
+  const totalSeconds = Math.floor(absMs/1000);
+  const days = Math.floor(totalSeconds/86400);
+  const hours = Math.floor((totalSeconds%86400)/3600);
+  const minutes = Math.floor((totalSeconds%3600)/60);
+  const seconds = totalSeconds%60;
+
+  let parts = [];
+  if(days>0) parts.push(days + ' ngày');
+  if(hours>0) parts.push(hours + ' giờ');
+  parts.push(minutes + ' phút');
+  parts.push(seconds + ' giây');
+  const amountStr = parts.join(' ');
+
+  let laterPlatform, earlierPlatform;
+  if(diffMs === 0){
+    resultArea.innerHTML = '<div class="result">Hai video đăng <span class="amount">CÙNG LÚC</span></div>';
+  } else if(diffMs > 0){
+    laterPlatform = 'TikTok'; earlierPlatform = 'YouTube';
+    resultArea.innerHTML = '<div class="result">' + laterPlatform + ' đăng sau ' + earlierPlatform + ' <span class="amount">' + amountStr + '</span></div>' +
+      '<div class="result-sub">YouTube: ' + ytDate.split('-').reverse().join('/') + ' — ' + ytTime + ' &nbsp;|&nbsp; TikTok: ' + ttDate.split('-').reverse().join('/') + ' — ' + ttTime + '</div>';
+  } else {
+    laterPlatform = 'YouTube'; earlierPlatform = 'TikTok';
+    resultArea.innerHTML = '<div class="result">' + laterPlatform + ' đăng sau ' + earlierPlatform + ' <span class="amount">' + amountStr + '</span></div>' +
+      '<div class="result-sub">YouTube: ' + ytDate.split('-').reverse().join('/') + ' — ' + ytTime + ' &nbsp;|&nbsp; TikTok: ' + ttDate.split('-').reverse().join('/') + ' — ' + ttTime + '</div>';
+  }
+
+  // position markers on the track proportionally (clamped 15%-85%), earlier on left
+  mYt.style.display = 'block';
+  mTt.style.display = 'block';
+  let ytPos, ttPos;
+  if(diffMs >= 0){ ytPos = 20; ttPos = 80; } else { ytPos = 80; ttPos = 20; }
+  mYt.style.left = ytPos + '%';
+  mTt.style.left = ttPos + '%';
+  document.getElementById('marker-yt-label').textContent = 'YouTube';
+  document.getElementById('marker-tt-label').textContent = 'TikTok';
+}
+
+document.getElementById('yt-fetch').addEventListener('click', fetchYoutube);
+document.getElementById('tt-fetch').addEventListener('click', fetchTiktok);
+['yt-date','yt-time','tt-date','tt-time'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', computeDiff);
+});
+document.getElementById('yt-url').addEventListener('keydown', e=>{ if(e.key==='Enter') fetchYoutube(); });
+document.getElementById('tt-url').addEventListener('keydown', e=>{ if(e.key==='Enter') fetchTiktok(); });
+</script>
