@@ -62,4 +62,19 @@ vercel --prod
 
 Lưu ý: Vercel sẽ phục vụ static files từ `/public` theo cấu hình `vercel.json`, và các API sẽ hoạt động tại `/api/*`.
 
+Trang đơn giản để so sánh
+
+Phiên bản hiện tại là một trang tĩnh trong `public/`:
+- [public/index.html](public/index.html)
+- [public/script.js](public/script.js)
+
+Hướng dẫn sử dụng:
+1. Mở trang (local: `npm start` → http://localhost:3000 or deploy trên Vercel).
+2. Dán link YouTube / TikTok vào từng panel và bấm `Lấy thumbnail & tiêu đề` để tự động fetch tiêu đề và thumbnail via oEmbed (lưu ý: oEmbed có thể bị chặn bởi CORS khi fetch trực tiếp từ trình duyệt).
+3. Nếu oEmbed không trả về ngày/giờ, nhập ngày và giờ theo tay rồi trang sẽ hiển thị chênh lệch (phút).
+
+Ghi chú kỹ thuật:
+- Lấy ngày/giờ chính xác từ YouTube/TikTok thường yêu cầu gọi server-side (scrape hoặc dùng API key). Để giữ dự án đơn giản, trang hiện cho phép nhập thủ công ngày/giờ và dùng oEmbed chỉ để lấy thumbnail/title.
+
+
 

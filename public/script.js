@@ -1,127 +1,80 @@
 // Lightweight helper
+// Simple client-only logic: use oEmbed for thumbnails and titles; user supplies date/time
 const el = id => document.getElementById(id);
 
-async function fetchApi(path, url){
-  const res = await fetch(path + '?url=' + encodeURIComponent(url));
-  if (!res.ok) throw new Error(await res.text());
-  return await res.json();
-}
-
-function pad(n){return String(n).padStart(2,'0')}
-
-function isoToDateTimeParts(iso){
-  if(!iso) return {date:'',time:'',dateObj:null};
-  const d = new Date(iso);
-  if(isNaN(d)) return {date:'',time:'',dateObj:null};
-  const yyyy = d.getFullYear();
-  const mm = pad(d.getMonth()+1);
-  const dd = pad(d.getDate());
-  const hh = pad(d.getHours());
-  const min = pad(d.getMinutes());
-  const ss = pad(d.getSeconds());
-  return {date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${min}:${ss}`, dateObj: d};
-}
-
-function setThumb(containerId, url){
-  const wrap = el(containerId);
-  if(!url){ wrap.innerHTML = '<div class="placeholder">Chưa có thumbnail</div>'; return; }
-  wrap.innerHTML = '';
-  const img = document.createElement('img');
-  img.src = url;
-  wrap.appendChild(img);
-}
-
-async function handleFetch(platform){
-  const url = el(platform === 'yt' ? 'yt-url' : 'tt-url').value.trim();
-  const errEl = el(platform === 'yt' ? 'yt-error' : 'tt-error');
-  errEl.textContent = '';
-  if(!url){ errEl.textContent = 'Vui lòng nhập link'; return; }
+async function fetchOEmbed(url){
   try{
-    const data = await fetchApi(platform === 'yt' ? '/api/youtube' : '/api/tiktok', url);
-    // populate
-    if(platform === 'yt'){
-      el('yt-channel').value = data.channel || '';
-      el('yt-title').value = data.title || '';
-      const parts = isoToDateTimeParts(data.uploadDate);
-      if(parts.date) el('yt-date').value = parts.date;
-      if(parts.time) el('yt-time').value = parts.time;
-      setThumb('yt-thumb', data.thumbnail);
-    } else {
-      el('tt-channel').value = data.channel || '';
-      el('tt-title').value = data.title || '';
-      const parts = isoToDateTimeParts(data.uploadDate);
-      if(parts.date) el('tt-date').value = parts.date;
-      if(parts.time) el('tt-time').value = parts.time;
-      setThumb('tt-thumb', data.thumbnail);
+    // Try YouTube oEmbed first, then TikTok; both support oEmbed
+    const res = await fetch('/.netlify/functions/proxy?url=' + encodeURIComponent(url));
+    // If a proxy is not available, try direct fetch (may fail due to CORS)
+    if(res.ok){
+      return await res.json();
     }
-    computeAndRender();
   }catch(e){
-    errEl.textContent = e.message || String(e);
+    // ignore
+  }
+  // fallback: try direct YouTube oembed
+  try{
+    const y = await fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent(url) + '&format=json');
+    if(y.ok) return await y.json();
+  }catch(e){}
+  try{
+    const t = await fetch('https://www.tiktok.com/oembed?url=' + encodeURIComponent(url));
+    if(t.ok) return await t.json();
+  }catch(e){}
+  throw new Error('Không lấy được oEmbed. Có thể do CORS — nhập tiêu đề/kênh bằng tay.');
+}
+
+function setThumb(id, url){
+  const wrap = el(id);
+  if(!url){ wrap.innerHTML = 'Thumbnail'; return; }
+  wrap.innerHTML = '';
+  const img = document.createElement('img'); img.src = url; wrap.appendChild(img);
+}
+
+async function onFetchClick(kind){
+  const url = el(kind === 'yt' ? 'yt-url' : 'tt-url').value.trim();
+  if(!url) return alert('Nhập đường link');
+  try{
+    const o = await fetchOEmbed(url);
+    // oembed fields: title, author_name, thumbnail_url
+    if(kind === 'yt'){
+      el('yt-channel').textContent = o.author_name || '—';
+      el('yt-title').textContent = o.title || '—';
+      setThumb('yt-thumb', o.thumbnail_url || '');
+    } else {
+      el('tt-channel').textContent = o.author_name ? (o.author_name.startsWith('@')?o.author_name:'@'+o.author_name) : '—';
+      el('tt-title').textContent = o.title || '—';
+      setThumb('tt-thumb', o.thumbnail_url || '');
+    }
+  }catch(err){
+    alert(err.message || String(err));
   }
 }
 
-function readDateTimeFromInputs(prefix){
-  const dateVal = el(prefix + '-date').value; // yyyy-mm-dd
-  const timeVal = el(prefix + '-time').value; // HH:MM[:SS]
-  if(!dateVal) return null;
-  const t = timeVal || '00:00:00';
-  // ensure seconds
-  const parts = t.split(':');
-  while(parts.length<3) parts.push('00');
-  const iso = dateVal + 'T' + parts.join(':');
-  const d = new Date(iso);
-  return isNaN(d) ? null : d;
+function readDT(prefix){
+  const d = el(prefix+'-date').value; const t = el(prefix+'-time').value || '00:00:00';
+  if(!d) return null;
+  const parts = t.split(':'); while(parts.length<3) parts.push('00');
+  const iso = d + 'T' + parts.join(':');
+  const dt = new Date(iso);
+  return isNaN(dt) ? null : dt;
 }
 
-function computeAndRender(){
-  const dY = readDateTimeFromInputs('yt');
-  const dT = readDateTimeFromInputs('tt');
-  const resultArea = el('result-area');
-  const markerY = el('marker-yt');
-  const markerT = el('marker-tt');
-  const labelY = el('marker-yt-label');
-  const labelT = el('marker-tt-label');
-  if(!dY || !dT){
-    // show placeholder
-    markerY.style.display = 'none';
-    markerT.style.display = 'none';
-    resultArea.innerHTML = '<div class="placeholder-result">Nhập đầy đủ ngày + giờ đăng ở cả 2 bên để xem chênh lệch</div>';
-    return;
-  }
-
-  // compute difference in minutes
-  const diffMs = dT.getTime() - dY.getTime();
-  const diffMin = Math.round(diffMs/60000);
-
-  // render result text
-  let text = '';
-  if(diffMin === 0) text = '<div class="result">Cùng thời điểm</div>';
-  else if(diffMin > 0) text = `<div class="result">Tiktok up sau Youtube <span class="amount">${diffMin} phút</span></div>`;
-  else text = `<div class="result">Tiktok up trước Youtube <span class="amount">${Math.abs(diffMin)} phút</span></div>`;
-
-  // position markers along the track between 8% and 92% based on relative times
-  const minTime = Math.min(dY.getTime(), dT.getTime());
-  const maxTime = Math.max(dY.getTime(), dT.getTime());
-  const range = Math.max(1, maxTime - minTime);
-  const posY = ((dY.getTime() - minTime) / range) * 84 + 8; // 8..92
-  const posT = ((dT.getTime() - minTime) / range) * 84 + 8;
-
-  markerY.style.left = posY + '%'; markerY.style.display = 'block';
-  markerT.style.left = posT + '%'; markerT.style.display = 'block';
-  labelY.textContent = `${dY.toLocaleDateString()} ${pad(dY.getHours())}:${pad(dY.getMinutes())}:${pad(dY.getSeconds())}`;
-  labelT.textContent = `${dT.toLocaleDateString()} ${pad(dT.getHours())}:${pad(dT.getMinutes())}:${pad(dT.getSeconds())}`;
-
-  resultArea.innerHTML = text + `<div class="result-sub">YouTube: ${el('yt-title').value || '—'} • TikTok: ${el('tt-title').value || '—'}</div>`;
+function compute(){
+  const y = readDT('yt'); const tt = readDT('tt'); const out = el('compare');
+  if(!y || !tt){ out.innerHTML = 'Nhập ngày + giờ ở cả hai bên để so sánh.'; return; }
+  const diffMin = Math.round((tt.getTime()-y.getTime())/60000);
+  if(diffMin === 0) out.innerHTML = '<strong>Cùng thời điểm</strong>';
+  else if(diffMin>0) out.innerHTML = `<strong>TikTok up sau YouTube ${diffMin} phút</strong>`;
+  else out.innerHTML = `<strong>TikTok up trước YouTube ${Math.abs(diffMin)} phút</strong>`;
 }
 
-// attach handlers
-document.addEventListener('click', e => {
-  if(e.target && e.target.id === 'yt-fetch') handleFetch('yt');
-  if(e.target && e.target.id === 'tt-fetch') handleFetch('tt');
+document.addEventListener('click', e=>{
+  if(e.target.id === 'yt-fetch') onFetchClick('yt');
+  if(e.target.id === 'tt-fetch') onFetchClick('tt');
 });
 
-['yt-date','yt-time','tt-date','tt-time','yt-title','tt-title'].forEach(id =>{
-  const node = el(id);
-  if(node) node.addEventListener('input', computeAndRender);
-});
+['yt-date','yt-time','tt-date','tt-time'].forEach(id=>{ const n=el(id); if(n) n.addEventListener('input', compute);});
+
 
